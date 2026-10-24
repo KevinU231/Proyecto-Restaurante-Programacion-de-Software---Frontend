@@ -1,0 +1,14 @@
+<div class="layout">
+  <aside class="sidebar">
+    <h2 class="marca">Restaurante</h2>
+    <nav class="menu">
+      @for (opcion of menu; track opcion.ruta) {
+        <a [routerLink]="opcion.ruta" routerLinkActive="activo">{{ opcion.etiqueta }}</a>
+      }
+    </nav>
+  </aside>
+
+  <main class="contenido">
+    <router-outlet />
+  </main>
+</div>
