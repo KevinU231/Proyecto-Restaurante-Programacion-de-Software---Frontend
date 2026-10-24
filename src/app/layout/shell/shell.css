@@ -1,0 +1,46 @@
+.layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 230px;
+  flex-shrink: 0;
+  background: #3b2a20;
+  color: #f5ebe0;
+  padding: 1.5rem 1rem;
+}
+
+.marca {
+  margin: 0 0 1.5rem;
+  font-size: 1.3rem;
+}
+
+.menu {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.menu a {
+  color: inherit;
+  text-decoration: none;
+  padding: 0.6rem 0.8rem;
+  border-radius: 6px;
+}
+
+.menu a:hover {
+  background: #54392b;
+}
+
+.menu a.activo {
+  background: #c8553d;
+  font-weight: 600;
+}
+
+.contenido {
+  flex: 1;
+  min-width: 0;
+  padding: 1.5rem 2rem;
+  background: #faf6f1;
+}
