@@ -1,1 +1,162 @@
-/* You can add global styles to this file, and also import other style files */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: #2b2118;
+}
+
+/* ---------- Pantallas CRUD (compartidas por todas las entidades) ---------- */
+.pagina-encabezado {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+}
+
+.pagina-encabezado h1 {
+  margin: 0;
+}
+
+.filtro {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.filtro input {
+  flex: 1;
+  max-width: 420px;
+}
+
+input {
+  padding: 0.55rem 0.7rem;
+  border: 1px solid #cdbfb2;
+  border-radius: 6px;
+  font: inherit;
+}
+
+.boton {
+  padding: 0.5rem 0.9rem;
+  border: 1px solid #cdbfb2;
+  border-radius: 6px;
+  background: #fff;
+  font: inherit;
+  cursor: pointer;
+}
+
+.boton:hover {
+  background: #f1e8de;
+}
+
+.boton.primario {
+  background: #c8553d;
+  border-color: #c8553d;
+  color: #fff;
+}
+
+.boton.primario:hover {
+  background: #a94530;
+}
+
+.boton.secundario {
+  background: transparent;
+}
+
+.boton.peligro {
+  color: #b3261e;
+  border-color: #b3261e;
+}
+
+.mensaje {
+  margin: 0 0 1rem;
+  padding: 0.6rem 0.8rem;
+  border-radius: 6px;
+  background: #fdf0d5;
+}
+
+.mensaje.error {
+  background: #fde2e0;
+  color: #8c1d18;
+}
+
+.tabla-contenedor {
+  overflow-x: auto;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 12%);
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabla th,
+.tabla td {
+  padding: 0.7rem 0.9rem;
+  text-align: left;
+  border-bottom: 1px solid #eee3d8;
+}
+
+.tabla th {
+  background: #f1e8de;
+}
+
+.tabla .id {
+  font-family: ui-monospace, Consolas, monospace;
+  font-size: 0.8rem;
+}
+
+.tabla .acciones {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.tabla .vacio {
+  text-align: center;
+  color: #7a6a5c;
+}
+
+.fondo-popup {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgb(0 0 0 / 45%);
+}
+
+.popup {
+  width: min(460px, 92vw);
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 1.5rem;
+  background: #fff;
+  border-radius: 10px;
+}
+
+.popup h2 {
+  margin-top: 0;
+}
+
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.8rem;
+}
+
+.campo span {
+  font-size: 0.85rem;
+  color: #5c4a3c;
+}
+
+.popup-acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}

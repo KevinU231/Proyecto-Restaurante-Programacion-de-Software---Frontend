@@ -1,0 +1,102 @@
+<section class="pagina">
+  <header class="pagina-encabezado">
+    <h1>Usuarios</h1>
+    <button type="button" class="boton primario" (click)="abrirCrear()">+ Crear usuario</button>
+  </header>
+
+  <div class="filtro">
+    <input type="text" placeholder="Buscar por ID (UUID)" [(ngModel)]="idFiltro" />
+    <button type="button" class="boton" (click)="buscarPorId()">Buscar</button>
+    <button type="button" class="boton secundario" (click)="limpiarFiltro()">Ver todos</button>
+  </div>
+
+  @if (cargando()) {
+    <p class="mensaje">Cargando...</p>
+  }
+  @if (mensaje()) {
+    <p class="mensaje">{{ mensaje() }}</p>
+  }
+
+  <div class="tabla-contenedor">
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Usuario</th>
+          <th>ID empleado</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (usuario of usuarios(); track usuario.id_usuario) {
+          <tr>
+            <td class="id">{{ usuario.id_usuario }}</td>
+            <td>
+              {{ usuario.primer_nombre }} {{ usuario.segundo_nombre }}
+              {{ usuario.primer_apellido }} {{ usuario.segundo_apellido }}
+            </td>
+            <td>{{ usuario.nombre_usuario }}</td>
+            <td class="id">{{ usuario.id_empleado }}</td>
+            <td class="acciones">
+              <button type="button" class="boton" (click)="abrirEditar(usuario)">Editar</button>
+              <button type="button" class="boton peligro" (click)="eliminar(usuario)">Eliminar</button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="vacio">Sin registros para mostrar.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
+
+@if (popupAbierto()) {
+  <div class="fondo-popup" (click)="cerrarPopup()">
+    <form class="popup" (click)="$event.stopPropagation()" (ngSubmit)="guardar()">
+      <h2>{{ modo() === 'crear' ? 'Crear usuario' : 'Editar usuario' }}</h2>
+
+      @if (modo() === 'crear') {
+        <label class="campo">
+          <span>ID del empleado</span>
+          <input name="id_empleado" [(ngModel)]="formulario.id_empleado" />
+        </label>
+      }
+      <label class="campo">
+        <span>Primer nombre</span>
+        <input name="primer_nombre" [(ngModel)]="formulario.primer_nombre" />
+      </label>
+      <label class="campo">
+        <span>Segundo nombre</span>
+        <input name="segundo_nombre" [(ngModel)]="formulario.segundo_nombre" />
+      </label>
+      <label class="campo">
+        <span>Primer apellido</span>
+        <input name="primer_apellido" [(ngModel)]="formulario.primer_apellido" />
+      </label>
+      <label class="campo">
+        <span>Segundo apellido</span>
+        <input name="segundo_apellido" [(ngModel)]="formulario.segundo_apellido" />
+      </label>
+      <label class="campo">
+        <span>Nombre de usuario</span>
+        <input name="nombre_usuario" [(ngModel)]="formulario.nombre_usuario" />
+      </label>
+      <label class="campo">
+        <span>{{ modo() === 'crear' ? 'Clave' : 'Nueva clave (vacío = no cambiar)' }}</span>
+        <input type="password" name="clave" [(ngModel)]="formulario.clave" />
+      </label>
+
+      @if (mensajePopup()) {
+        <p class="mensaje error">{{ mensajePopup() }}</p>
+      }
+
+      <div class="popup-acciones">
+        <button type="button" class="boton secundario" (click)="cerrarPopup()">Cancelar</button>
+        <button type="submit" class="boton primario">Guardar</button>
+      </div>
+    </form>
+  </div>
+}
