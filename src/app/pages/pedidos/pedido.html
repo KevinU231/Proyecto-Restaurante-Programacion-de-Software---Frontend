@@ -1,0 +1,95 @@
+
+<section class="pagina">
+  <header class="pagina-encabezado">
+    <h1>Pedidos</h1>
+    <button class="boton primario" (click)="abrirCrear()">+ Crear pedido</button>
+  </header>
+
+  <div class="filtro">
+    <input placeholder="Buscar por ID (UUID)" [(ngModel)]="idFiltro">
+    <button class="boton" (click)="buscarPorId()">Buscar</button>
+    <button class="boton secundario" (click)="limpiarFiltro()">Ver todos</button>
+  </div>
+
+  @if (cargando()) { <p class="mensaje">Cargando...</p> }
+  @if (mensaje()) { <p class="mensaje">{{ mensaje() }}</p> }
+
+  <div class="tabla-contenedor">
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>ID empleado</th>
+          <th>ID cliente</th>
+          <th>ID mesa</th>
+          <th>Estado</th>
+          <th>Total</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (pedido of pedidos(); track pedido.id_pedido) {
+          <tr>
+            <td class="id">{{ pedido.id_pedido }}</td>
+            <td class="id">{{ pedido.id_empleado }}</td>
+            <td class="id">{{ pedido.id_cliente }}</td>
+            <td class="id">{{ pedido.id_mesa || 'Sin mesa' }}</td>
+            <td>{{ pedido.estado }}</td>
+            <td>{{ pedido.total | number:'1.2-2' }}</td>
+            <td class="acciones">
+              <button class="boton" (click)="abrirEditar(pedido)">Editar</button>
+              <button class="boton peligro" (click)="eliminar(pedido)">Eliminar</button>
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="7" class="vacio">Sin registros para mostrar.</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
+
+@if (popupAbierto()) {
+  <div class="fondo-popup" (click)="cerrarPopup()">
+    <form class="popup" (click)="$event.stopPropagation()" (ngSubmit)="guardar()">
+      <h2>{{ modo() === 'crear' ? 'Crear pedido' : 'Editar pedido' }}</h2>
+
+      <label class="campo">
+        <span>ID empleado</span>
+        <input name="id_empleado" [(ngModel)]="formulario.id_empleado">
+      </label>
+
+      <label class="campo">
+        <span>ID cliente</span>
+        <input name="id_cliente" [(ngModel)]="formulario.id_cliente">
+      </label>
+
+      <label class="campo">
+        <span>ID mesa (opcional)</span>
+        <input name="id_mesa" [(ngModel)]="formulario.id_mesa">
+      </label>
+
+      <label class="campo">
+        <span>Estado</span>
+        <select name="estado" [(ngModel)]="formulario.estado">
+          <option value="Pendiente">Pendiente</option>
+          <option value="En preparación">En preparación</option>
+          <option value="Entregado">Entregado</option>
+          <option value="Cancelado">Cancelado</option>
+        </select>
+      </label>
+
+      <label class="campo">
+        <span>Total</span>
+        <input type="number" min="0" step="0.01" name="total" [(ngModel)]="formulario.total">
+      </label>
+
+      @if (mensajePopup()) { <p class="mensaje error">{{ mensajePopup() }}</p> }
+
+      <div class="popup-acciones">
+        <button type="button" class="boton secundario" (click)="cerrarPopup()">Cancelar</button>
+        <button type="submit" class="boton primario">Guardar</button>
+      </div>
+    </form>
+  </div>
+}
