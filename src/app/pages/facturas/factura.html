@@ -1,0 +1,81 @@
+
+<section class="pagina">
+  <header class="pagina-encabezado">
+    <h1>Facturas</h1>
+    <button class="boton primario" (click)="abrirCrear()">+ Crear factura</button>
+  </header>
+
+  <div class="filtro">
+    <input placeholder="Buscar por ID (UUID)" [(ngModel)]="idFiltro">
+    <button class="boton" (click)="buscarPorId()">Buscar</button>
+    <button class="boton secundario" (click)="limpiarFiltro()">Ver todos</button>
+  </div>
+
+  @if (cargando()) { <p class="mensaje">Cargando...</p> }
+  @if (mensaje()) { <p class="mensaje">{{ mensaje() }}</p> }
+
+  <div class="tabla-contenedor">
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>ID pedido</th>
+          <th>Método de pago</th>
+          <th>Total</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (factura of facturas(); track factura.id_factura) {
+          <tr>
+            <td class="id">{{ factura.id_factura }}</td>
+            <td class="id">{{ factura.id_pedido }}</td>
+            <td>{{ factura.metodo_pago }}</td>
+            <td>{{ factura.total | number:'1.2-2' }}</td>
+            <td class="acciones">
+              <button class="boton" (click)="abrirEditar(factura)">Editar</button>
+              <button class="boton peligro" (click)="eliminar(factura)">Eliminar</button>
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="5" class="vacio">Sin registros para mostrar.</td></tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
+
+@if (popupAbierto()) {
+  <div class="fondo-popup" (click)="cerrarPopup()">
+    <form class="popup" (click)="$event.stopPropagation()" (ngSubmit)="guardar()">
+      <h2>{{ modo() === 'crear' ? 'Crear factura' : 'Editar factura' }}</h2>
+
+      <label class="campo">
+        <span>ID pedido</span>
+        <input name="id_pedido" [(ngModel)]="formulario.id_pedido">
+      </label>
+
+      <label class="campo">
+        <span>Método de pago</span>
+        <select name="metodo_pago" [(ngModel)]="formulario.metodo_pago">
+          <option value="">Seleccionar</option>
+          <option value="Efectivo">Efectivo</option>
+          <option value="Tarjeta">Tarjeta</option>
+          <option value="Transferencia">Transferencia</option>
+        </select>
+      </label>
+
+      <label class="campo">
+        <span>Total</span>
+        <input type="number" min="0" step="0.01" name="total" [(ngModel)]="formulario.total">
+      </label>
+
+      @if (mensajePopup()) { <p class="mensaje error">{{ mensajePopup() }}</p> }
+
+      <div class="popup-acciones">
+        <button type="button" class="boton secundario" (click)="cerrarPopup()">Cancelar</button>
+        <button type="submit" class="boton primario">Guardar</button>
+      </div>
+    </form>
+  </div>
+}
