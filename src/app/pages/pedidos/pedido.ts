@@ -28,8 +28,8 @@ type Modo = 'crear' | 'editar';
 @Component({
   selector: 'app-pedidos',
   imports: [FormsModule, DecimalPipe],
-  templateUrl: './pedidos.html',
-  styleUrl: './pedidos.css',
+  templateUrl: './pedido.html',
+  styleUrl: './pedido.css',
 })
 export class Pedidos implements OnInit {
   private readonly http = inject(HttpClient);
