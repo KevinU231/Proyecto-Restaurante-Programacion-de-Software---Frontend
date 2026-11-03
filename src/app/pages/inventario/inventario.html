@@ -1,0 +1,41 @@
+<div class="container mt-4">
+  <h2>Gestión de Inventario</h2>
+  <form (ngSubmit)="guardarItem()" class="card p-3 mb-4">
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label">Item / Insumo</label>
+        <input type="text" [(ngModel)]="nuevoItem.nombre_item" name="nombre_item" class="form-control" required>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Cantidad</label>
+        <input type="number" [(ngModel)]="nuevoItem.cantidad_stock" name="cantidad_stock" class="form-control" required>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Unidad de Medida</label>
+        <input type="text" [(ngModel)]="nuevoItem.unidad_medida" name="unidad_medida" class="form-control" required>
+      </div>
+      <div class="col-12">
+        <button type="submit" class="btn btn-primary">Guardar Item</button>
+      </div>
+    </div>
+  </form>
+
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Stock</th>
+        <th>Unidad</th>
+        <th>Stock Mínimo</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let item of inventarios">
+        <td>{{ item.nombre_item }}</td>
+        <td>{{ item.cantidad_stock }}</td>
+        <td>{{ item.unidad_medida }}</td>
+        <td>{{ item.stock_minimo }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
