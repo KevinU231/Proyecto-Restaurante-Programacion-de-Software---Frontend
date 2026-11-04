@@ -1,0 +1,45 @@
+<div class="container mt-4">
+  <h2>Gestión de Menús</h2>
+  
+  <!-- Formulario para agregar menú -->
+  <form (ngSubmit)="guardarMenu()" class="card p-3 mb-4">
+    <div class="row g-3">
+      <div class="col-md-6">
+        <label class="form-label">Nombre del Menú</label>
+        <input type="text" [(ngModel)]="nuevoMenu.nombre_menu" name="nombre_menu" class="form-control" required>
+      </div>
+      <div class="col-md-6">
+        <label class="form-label">Disponible</label>
+        <select [(ngModel)]="nuevoMenu.disponible" name="disponible" class="form-select">
+          <option [ngValue]="true">Sí</option>
+          <option [ngValue]="false">No</option>
+        </select>
+      </div>
+      <div class="col-12">
+        <label class="form-label">Descripción</label>
+        <textarea [(ngModel)]="nuevoMenu.descripcion" name="descripcion" class="form-control" rows="2"></textarea>
+      </div>
+      <div class="col-12">
+        <button type="submit" class="btn btn-primary">Guardar Menú</button>
+      </div>
+    </div>
+  </form>
+
+  <!-- Tabla de menús -->
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Descripción</th>
+        <th>Disponible</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let m of menus">
+        <td>{{ m.nombre_menu }}</td>
+        <td>{{ m.descripcion }}</td>
+        <td>{{ m.disponible ? 'Sí' : 'No' }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

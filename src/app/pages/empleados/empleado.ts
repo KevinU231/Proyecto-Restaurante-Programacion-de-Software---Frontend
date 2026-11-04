@@ -25,8 +25,8 @@ type Modo = 'crear' | 'editar';
 @Component({
   selector: 'app-empleados',
   imports: [FormsModule],
-  templateUrl: './empleados.html',
-  styleUrl: './empleados.css',
+  templateUrl: './empleado.html',
+  styleUrl: './empleado.css',
 })
 export class Empleados implements OnInit {
   private readonly http = inject(HttpClient);
