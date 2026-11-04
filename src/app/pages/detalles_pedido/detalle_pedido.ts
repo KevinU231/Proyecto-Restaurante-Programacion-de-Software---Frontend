@@ -27,8 +27,8 @@ type Modo = 'crear' | 'editar';
 @Component({
   selector: 'app-detalles-pedido',
   imports: [FormsModule, DecimalPipe],
-  templateUrl: './detalles-pedido.html',
-  styleUrl: './detalles-pedido.css',
+  templateUrl: './detalle_pedido.html',
+  styleUrl: './detalle_pedido.css',
 })
 export class DetallesPedido implements OnInit {
   private readonly http = inject(HttpClient);

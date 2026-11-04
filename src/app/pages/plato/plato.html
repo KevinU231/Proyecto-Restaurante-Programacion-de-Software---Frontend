@@ -1,0 +1,46 @@
+<div class="container mt-4">
+  <h2>Gestión de Platos</h2>
+  
+  <form (ngSubmit)="guardarPlato()" class="card p-3 mb-4">
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label">Nombre</label>
+        <input type="text" [(ngModel)]="nuevoPlato.nombre" name="nombre" class="form-control" required>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Precio</label>
+        <input type="number" [(ngModel)]="nuevoPlato.precio" name="precio" class="form-control" required>
+      </div>
+      <div class="col-md-4">
+        <label class="form-label">Categoría</label>
+        <input type="text" [(ngModel)]="nuevoPlato.categoria" name="categoria" class="form-control" required>
+      </div>
+      <div class="col-12">
+        <label class="form-label">Descripción</label>
+        <textarea [(ngModel)]="nuevoPlato.descripcion" name="descripcion" class="form-control"></textarea>
+      </div>
+      <div class="col-12">
+        <button type="submit" class="btn btn-primary">Guardar Plato</button>
+      </div>
+    </div>
+  </form>
+
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>Nombre</th>
+        <th>Categoría</th>
+        <th>Precio</th>
+        <th>Disponible</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let p of platos">
+        <td>{{ p.nombre }}</td>
+        <td>{{ p.categoria }}</td>
+        <td>${{ p.precio }}</td>
+        <td>{{ p.disponible ? 'Sí' : 'No' }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

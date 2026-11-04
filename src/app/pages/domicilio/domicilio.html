@@ -1,0 +1,42 @@
+HTML
+<div class="container mt-4">
+  <h2>Gestión de Domicilios</h2>
+  <form (ngSubmit)="guardarDomicilio()" class="card p-3 mb-4">
+    <div class="row g-3">
+      <div class="col-md-4">
+        <label class="form-label">ID Pedido</label>
+        <input type="text" [(ngModel)]="nuevoDomicilio.id_pedido" name="id_pedido" class="form-control" required>
+      </div>
+      <div class="col-md-5">
+        <label class="form-label">Dirección de Entrega</label>
+        <input type="text" [(ngModel)]="nuevoDomicilio.direccion_entrega" name="direccion_entrega" class="form-control" required>
+      </div>
+      <div class="col-md-3">
+        <label class="form-label">Costo Envío</label>
+        <input type="number" [(ngModel)]="nuevoDomicilio.costo_envio" name="costo_envio" class="form-control" required>
+      </div>
+      <div class="col-12">
+        <button type="submit" class="btn btn-primary">Registrar Domicilio</button>
+      </div>
+    </div>
+  </form>
+
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <th>ID Pedido</th>
+        <th>Dirección</th>
+        <th>Estado</th>
+        <th>Costo</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let d of domicilios">
+        <td>{{ d.id_pedido }}</td>
+        <td>{{ d.direccion_entrega }}</td>
+        <td>{{ d.estado_envio }}</td>
+        <td>${{ d.costo_envio }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

@@ -24,8 +24,8 @@ type Modo = 'crear' | 'editar';
 @Component({
   selector: 'app-facturas',
   imports: [FormsModule, DecimalPipe],
-  templateUrl: './facturas.html',
-  styleUrl: './facturas.css',
+  templateUrl: './factura.html',
+  styleUrl: './factura.css',
 })
 export class Facturas implements OnInit {
   private readonly http = inject(HttpClient);
