@@ -1,0 +1,9 @@
+/* Estilos propios de la pantalla de Inventario */
+.cabecera {
+  border-left: 6px solid #2b86a8;
+  padding-left: 0.9rem;
+}
+
+.sobretitulo {
+  color: #2b86a8;
+}
