@@ -1,9 +1,24 @@
-<div class="layout">
+<div class="layout" [class.retraido]="retraido()">
   <aside class="sidebar">
-    <h2 class="marca">Restaurante</h2>
+    <div class="sidebar-cabecera">
+      <span class="marca">🍽️ <span class="texto">Restaurante</span></span>
+      <button
+        type="button"
+        class="alternar"
+        [attr.aria-label]="retraido() ? 'Expandir menú' : 'Retraer menú'"
+        [attr.aria-expanded]="!retraido()"
+        (click)="alternar()"
+      >
+        {{ retraido() ? '»' : '«' }}
+      </button>
+    </div>
+
     <nav class="menu">
-      @for (opcion of menu; track opcion.ruta) {
-        <a [routerLink]="opcion.ruta" routerLinkActive="activo">{{ opcion.etiqueta }}</a>
+      @for (entidad of entidades; track entidad.ruta) {
+        <a [routerLink]="'/' + entidad.ruta" routerLinkActive="activo" [title]="entidad.titulo">
+          <span class="icono">{{ entidad.icono }}</span>
+          <span class="texto">{{ entidad.titulo }}</span>
+        </a>
       }
     </nav>
   </aside>

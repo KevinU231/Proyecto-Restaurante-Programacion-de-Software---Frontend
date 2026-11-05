@@ -1,0 +1,9 @@
+/* Estilos propios de la pantalla de Clientes */
+.cabecera {
+  border-left: 6px solid #e76f51;
+  padding-left: 0.9rem;
+}
+
+.sobretitulo {
+  color: #e76f51;
+}

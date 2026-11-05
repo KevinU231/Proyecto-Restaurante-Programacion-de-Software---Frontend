@@ -1,0 +1,32 @@
+/* Estilos propios de la pantalla de Reservas */
+.cabecera {
+  border-left: 6px solid #8e6bbf;
+  padding-left: 0.9rem;
+}
+
+.sobretitulo {
+  color: #8e6bbf;
+}
+
+.pill {
+  display: inline-block;
+  padding: 0.15rem 0.7rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.estado-confirmada {
+  background: #d9ecf7;
+  color: #12557a;
+}
+
+.estado-cancelada {
+  background: #fde2e0;
+  color: #8c1d18;
+}
+
+.estado-cumplida {
+  background: #d9f2e6;
+  color: #17694a;
+}
