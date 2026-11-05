@@ -1,0 +1,132 @@
+<section class="pagina">
+  <header class="cabecera">
+    <div>
+      <p class="sobretitulo">Módulo</p>
+      <h1>🧑 Clientes</h1>
+    </div>
+    <button type="button" class="btn btn-principal" (click)="abrirCrear()">
+      + Nuevo cliente
+    </button>
+  </header>
+
+  <div class="buscador">
+    <input
+      type="text"
+      placeholder="Buscar cliente por ID (UUID)"
+      [(ngModel)]="idFiltro"
+      (keyup.enter)="buscarPorId()"
+    />
+    <button type="button" class="btn" (click)="buscarPorId()">Buscar</button>
+    <button type="button" class="btn btn-suave" (click)="limpiarFiltro()">Ver todos</button>
+  </div>
+
+  @if (cargando()) {
+    <p class="aviso">Cargando…</p>
+  }
+  @if (mensaje()) {
+    <p class="aviso" [class.aviso-error]="esError()">{{ mensaje() }}</p>
+  }
+
+  <div class="tabla-caja">
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Teléfono</th>
+          <th>Correo</th>
+          <th>Dirección</th>
+          <th class="col-acciones">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (fila of filas(); track fila.id_cliente) {
+          <tr>
+            <td>
+              <button
+                type="button"
+                class="id-copiar"
+                [title]="fila.id_cliente + ' (clic para copiar)'"
+                (click)="copiarId(fila)"
+              >
+                {{ fila.id_cliente.slice(0, 8) }}…
+              </button>
+            </td>
+            <td>{{ fila.nombre }}</td>
+            <td>{{ fila.telefono }}</td>
+            <td>{{ fila.correo }}</td>
+            <td>{{ fila.direccion }}</td>
+            <td class="acciones">
+              <button type="button" class="btn btn-mini" (click)="ver(fila)">Ver</button>
+              <button type="button" class="btn btn-mini" (click)="abrirEditar(fila)">Editar</button>
+              <button type="button" class="btn btn-mini btn-peligro" (click)="eliminar(fila)">
+                Eliminar
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="vacio">Nada para mostrar por ahora.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
+
+@if (panelAbierto()) {
+  <div class="velo" (click)="cerrarPanel()"></div>
+  <aside class="panel" role="dialog" aria-modal="true" [attr.aria-label]="tituloPanel()">
+    <header class="panel-cabecera">
+      <h2>{{ tituloPanel() }}</h2>
+      <button type="button" class="panel-cerrar" aria-label="Cerrar panel" (click)="cerrarPanel()">
+        ✕
+      </button>
+    </header>
+
+    <div class="panel-cuerpo">
+        <div class="campo">
+          <label class="campo-etiqueta">
+            Nombre
+          @if (!soloLectura()) {
+            <span class="obligatorio">*</span>
+          }
+          </label>
+          <input type="text" [(ngModel)]="formulario.nombre" [disabled]="soloLectura()" />
+        </div>
+
+        <div class="campo">
+          <label class="campo-etiqueta">
+            Teléfono
+          @if (!soloLectura()) {
+            <span class="obligatorio">*</span>
+          }
+          </label>
+          <input type="text" [(ngModel)]="formulario.telefono" [disabled]="soloLectura()" />
+        </div>
+
+        <div class="campo">
+          <label class="campo-etiqueta">
+            Correo
+          </label>
+          <input type="text" [(ngModel)]="formulario.correo" [disabled]="soloLectura()" />
+        </div>
+
+        <div class="campo">
+          <label class="campo-etiqueta">
+            Dirección
+          </label>
+          <input type="text" [(ngModel)]="formulario.direccion" [disabled]="soloLectura()" />
+        </div>
+    </div>
+
+    <footer class="panel-pie">
+      <button type="button" class="btn btn-suave" (click)="cerrarPanel()">
+        {{ soloLectura() ? 'Cerrar' : 'Cancelar' }}
+      </button>
+      @if (!soloLectura()) {
+        <button type="button" class="btn btn-principal" (click)="guardar()">Guardar</button>
+      }
+    </footer>
+  </aside>
+}

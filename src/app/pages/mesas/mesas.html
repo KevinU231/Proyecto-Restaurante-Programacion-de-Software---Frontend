@@ -1,0 +1,130 @@
+<section class="pagina">
+  <header class="cabecera">
+    <div>
+      <p class="sobretitulo">Módulo</p>
+      <h1>🪑 Mesas</h1>
+    </div>
+    <button type="button" class="btn btn-principal" (click)="abrirCrear()">
+      + Nueva mesa
+    </button>
+  </header>
+
+  <div class="buscador">
+    <input
+      type="text"
+      placeholder="Buscar mesa por ID (UUID)"
+      [(ngModel)]="idFiltro"
+      (keyup.enter)="buscarPorId()"
+    />
+    <button type="button" class="btn" (click)="buscarPorId()">Buscar</button>
+    <button type="button" class="btn btn-suave" (click)="limpiarFiltro()">Ver todos</button>
+  </div>
+
+  @if (cargando()) {
+    <p class="aviso">Cargando…</p>
+  }
+  @if (mensaje()) {
+    <p class="aviso" [class.aviso-error]="esError()">{{ mensaje() }}</p>
+  }
+
+  <div class="tabla-caja">
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Número</th>
+          <th>Capacidad</th>
+          <th>Estado</th>
+          <th class="col-acciones">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (fila of filas(); track fila.id_mesa) {
+          <tr>
+            <td>
+              <button
+                type="button"
+                class="id-copiar"
+                [title]="fila.id_mesa + ' (clic para copiar)'"
+                (click)="copiarId(fila)"
+              >
+                {{ fila.id_mesa.slice(0, 8) }}…
+              </button>
+            </td>
+            <td>{{ fila.numero }}</td>
+            <td>{{ fila.capacidad }}</td>
+            <td><span [class]="'pill estado-' + fila.estado">{{ fila.estado }}</span></td>
+            <td class="acciones">
+              <button type="button" class="btn btn-mini" (click)="ver(fila)">Ver</button>
+              <button type="button" class="btn btn-mini" (click)="abrirEditar(fila)">Editar</button>
+              <button type="button" class="btn btn-mini btn-peligro" (click)="eliminar(fila)">
+                Eliminar
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="vacio">Nada para mostrar por ahora.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
+
+@if (panelAbierto()) {
+  <div class="velo" (click)="cerrarPanel()"></div>
+  <aside class="panel" role="dialog" aria-modal="true" [attr.aria-label]="tituloPanel()">
+    <header class="panel-cabecera">
+      <h2>{{ tituloPanel() }}</h2>
+      <button type="button" class="panel-cerrar" aria-label="Cerrar panel" (click)="cerrarPanel()">
+        ✕
+      </button>
+    </header>
+
+    <div class="panel-cuerpo">
+        <div class="campo">
+          <label class="campo-etiqueta">
+            Número
+          @if (!soloLectura()) {
+            <span class="obligatorio">*</span>
+          }
+          </label>
+          <input type="number" [(ngModel)]="formulario.numero" [disabled]="soloLectura()" />
+        </div>
+
+        <div class="campo">
+          <label class="campo-etiqueta">
+            Capacidad
+          @if (!soloLectura()) {
+            <span class="obligatorio">*</span>
+          }
+          </label>
+          <input type="number" [(ngModel)]="formulario.capacidad" [disabled]="soloLectura()" />
+        </div>
+
+        <div class="campo">
+          <label class="campo-etiqueta">
+            Estado
+          @if (!soloLectura()) {
+            <span class="obligatorio">*</span>
+          }
+          </label>
+          <select [(ngModel)]="formulario.estado" [disabled]="soloLectura()">
+            <option value="libre">libre</option>
+            <option value="ocupada">ocupada</option>
+            <option value="reservada">reservada</option>
+          </select>
+        </div>
+    </div>
+
+    <footer class="panel-pie">
+      <button type="button" class="btn btn-suave" (click)="cerrarPanel()">
+        {{ soloLectura() ? 'Cerrar' : 'Cancelar' }}
+      </button>
+      @if (!soloLectura()) {
+        <button type="button" class="btn btn-principal" (click)="guardar()">Guardar</button>
+      }
+    </footer>
+  </aside>
+}
