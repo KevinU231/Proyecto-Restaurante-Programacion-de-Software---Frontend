@@ -1,0 +1,176 @@
+<section class="pagina">
+  <header class="cabecera">
+    <div>
+      <p class="sobretitulo">Módulo</p>
+      <h1>📅 Reservas</h1>
+    </div>
+    <button type="button" class="btn btn-principal" (click)="abrirCrear()">
+      + Nueva reserva
+    </button>
+  </header>
+
+  <div class="buscador">
+    <input
+      type="text"
+      placeholder="Buscar reserva por ID (UUID)"
+      [(ngModel)]="idFiltro"
+      (keyup.enter)="buscarPorId()"
+    />
+    <button type="button" class="btn" (click)="buscarPorId()">Buscar</button>
+    <button type="button" class="btn btn-suave" (click)="limpiarFiltro()">Ver todos</button>
+  </div>
+
+  @if (cargando()) {
+    <p class="aviso">Cargando…</p>
+  }
+  @if (mensaje()) {
+    <p class="aviso" [class.aviso-error]="esError()">{{ mensaje() }}</p>
+  }
+
+  <div class="tabla-caja">
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Cliente</th>
+          <th>Mesa</th>
+          <th>Fecha</th>
+          <th>Hora</th>
+          <th>Personas</th>
+          <th>Estado</th>
+          <th class="col-acciones">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (fila of filas(); track fila.id_reserva) {
+          <tr>
+            <td>
+              <button
+                type="button"
+                class="id-copiar"
+                [title]="fila.id_reserva + ' (clic para copiar)'"
+                (click)="copiarId(fila)"
+              >
+                {{ fila.id_reserva.slice(0, 8) }}…
+              </button>
+            </td>
+            <td>{{ etiquetaClientePorId(fila.id_cliente) }}</td>
+            <td>{{ etiquetaMesaPorId(fila.id_mesa) }}</td>
+            <td>{{ fila.fecha }}</td>
+            <td>{{ fila.hora }}</td>
+            <td>{{ fila.num_personas }}</td>
+            <td><span [class]="'pill estado-' + fila.estado">{{ fila.estado }}</span></td>
+            <td class="acciones">
+              <button type="button" class="btn btn-mini" (click)="ver(fila)">Ver</button>
+              <button type="button" class="btn btn-mini" (click)="abrirEditar(fila)">Editar</button>
+              <button type="button" class="btn btn-mini btn-peligro" (click)="eliminar(fila)">
+                Eliminar
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="8" class="vacio">Nada para mostrar por ahora.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
+
+@if (panelAbierto()) {
+  <div class="velo" (click)="cerrarPanel()"></div>
+  <aside class="panel" role="dialog" aria-modal="true" [attr.aria-label]="tituloPanel()">
+    <header class="panel-cabecera">
+      <h2>{{ tituloPanel() }}</h2>
+      <button type="button" class="panel-cerrar" aria-label="Cerrar panel" (click)="cerrarPanel()">
+        ✕
+      </button>
+    </header>
+
+    <div class="panel-cuerpo">
+        <div class="campo">
+          <label class="campo-etiqueta">
+            Cliente
+          @if (!soloLectura()) {
+            <span class="obligatorio">*</span>
+          }
+          </label>
+          <select [(ngModel)]="formulario.id_cliente" [disabled]="modo() !== 'crear'">
+            <option value="">— Selecciona —</option>
+            @for (opcion of clientes(); track opcion.id_cliente) {
+              <option [value]="opcion.id_cliente">{{ etiquetaCliente(opcion) }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="campo">
+          <label class="campo-etiqueta">
+            Mesa
+          @if (!soloLectura()) {
+            <span class="obligatorio">*</span>
+          }
+          </label>
+          <select [(ngModel)]="formulario.id_mesa" [disabled]="modo() !== 'crear'">
+            <option value="">— Selecciona —</option>
+            @for (opcion of mesas(); track opcion.id_mesa) {
+              <option [value]="opcion.id_mesa">{{ etiquetaMesa(opcion) }}</option>
+            }
+          </select>
+        </div>
+
+        <div class="campo">
+          <label class="campo-etiqueta">
+            Fecha
+          @if (!soloLectura()) {
+            <span class="obligatorio">*</span>
+          }
+          </label>
+          <input type="date" [(ngModel)]="formulario.fecha" [disabled]="soloLectura()" />
+        </div>
+
+        <div class="campo">
+          <label class="campo-etiqueta">
+            Hora
+          @if (!soloLectura()) {
+            <span class="obligatorio">*</span>
+          }
+          </label>
+          <input type="time" [(ngModel)]="formulario.hora" [disabled]="soloLectura()" />
+        </div>
+
+        <div class="campo">
+          <label class="campo-etiqueta">
+            Personas
+          @if (!soloLectura()) {
+            <span class="obligatorio">*</span>
+          }
+          </label>
+          <input type="number" [(ngModel)]="formulario.num_personas" [disabled]="soloLectura()" />
+        </div>
+
+        <div class="campo">
+          <label class="campo-etiqueta">
+            Estado
+          @if (!soloLectura()) {
+            <span class="obligatorio">*</span>
+          }
+          </label>
+          <select [(ngModel)]="formulario.estado" [disabled]="soloLectura()">
+            <option value="confirmada">confirmada</option>
+            <option value="cancelada">cancelada</option>
+            <option value="cumplida">cumplida</option>
+          </select>
+        </div>
+    </div>
+
+    <footer class="panel-pie">
+      <button type="button" class="btn btn-suave" (click)="cerrarPanel()">
+        {{ soloLectura() ? 'Cerrar' : 'Cancelar' }}
+      </button>
+      @if (!soloLectura()) {
+        <button type="button" class="btn btn-principal" (click)="guardar()">Guardar</button>
+      }
+    </footer>
+  </aside>
+}
