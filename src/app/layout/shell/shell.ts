@@ -1,10 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 
-interface OpcionMenu {
-  ruta: string;
-  etiqueta: string;
-}
+import { MENU } from '../menu';
 
 @Component({
   selector: 'app-shell',
@@ -13,6 +10,10 @@ interface OpcionMenu {
   styleUrl: './shell.css',
 })
 export class Shell {
-  // Para agregar una pantalla: crea su página, su ruta en app.routes.ts y una línea aquí.
-  readonly menu: OpcionMenu[] = [{ ruta: '/usuarios', etiqueta: 'Usuarios' }];
+  readonly entidades = MENU;
+  readonly retraido = signal(false);
+
+  alternar(): void {
+    this.retraido.update((valor) => !valor);
+  }
 }

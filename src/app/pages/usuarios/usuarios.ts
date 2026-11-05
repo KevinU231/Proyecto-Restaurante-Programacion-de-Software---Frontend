@@ -1,12 +1,23 @@
-import { HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
+import { environment } from '../../../environments/environment';
 import { HTTP_STATUS } from '../../constants/http-status';
-import { Usuario, UsuarioCreate, UsuarioUpdate } from '../../models/usuario.model';
-import { UsuarioService } from '../../services/usuario.service';
+import { Usuario, UsuarioCreate, UsuarioUpdate, EmpleadoReferencia } from '../../models/usuario.model';
+import { GenericService } from '../../services/generic.service';
 
-type Modo = 'crear' | 'editar';
+type ModoPanel = 'crear' | 'editar' | 'ver';
+
+interface UsuarioFormulario {
+  id_empleado: string;
+  nombre_usuario: string;
+  primer_nombre: string;
+  segundo_nombre: string;
+  primer_apellido: string;
+  segundo_apellido: string;
+  clave: string;
+}
 
 @Component({
   selector: 'app-usuarios',
@@ -15,139 +26,263 @@ type Modo = 'crear' | 'editar';
   styleUrl: './usuarios.css',
 })
 export class Usuarios implements OnInit {
-  private readonly servicio = inject(UsuarioService);
+  private readonly http = inject(HttpClient);
+  private readonly usuarioService = new GenericService<Usuario, UsuarioCreate, UsuarioUpdate>(
+    this.http,
+    'usuarios',
+  );
+  private readonly empleadoService = new GenericService<EmpleadoReferencia, unknown, unknown>(
+    this.http,
+    'empleados',
+  );
 
-  readonly usuarios = signal<Usuario[]>([]);
-  readonly cargando = signal(false);
+  readonly filas = signal<Usuario[]>([]);
+  readonly empleados = signal<EmpleadoReferencia[]>([]);
   readonly mensaje = signal('');
-  readonly mensajePopup = signal('');
-  readonly popupAbierto = signal(false);
-  readonly modo = signal<Modo>('crear');
+  readonly esError = signal(false);
+  readonly cargando = signal(false);
+  readonly panelAbierto = signal(false);
+  readonly modo = signal<ModoPanel>('crear');
+  readonly soloLectura = computed(() => this.modo() === 'ver');
+  readonly tituloPanel = computed(() => {
+    switch (this.modo()) {
+      case 'crear':
+        return 'Nuevo usuario';
+      case 'editar':
+        return 'Editar usuario';
+      default:
+        return 'Detalle del usuario';
+    }
+  });
 
   idFiltro = '';
-  formulario: UsuarioCreate = this.formularioVacio();
-  private idEnEdicion = '';
+  formulario: UsuarioFormulario = this.formularioVacio();
+  private idEditando = '';
 
   ngOnInit(): void {
-    this.cargar();
+    this.cargarTodos();
+    this.cargarEmpleados();
   }
 
-  cargar(): void {
-    this.cargando.set(true);
-    this.mensaje.set('');
-    this.servicio.listar().subscribe({
-      next: (respuesta) => {
-        this.usuarios.set(respuesta.data ?? []);
-        this.cargando.set(false);
-      },
-      error: (error: HttpErrorResponse) => {
-        this.usuarios.set([]);
-        this.cargando.set(false);
-        this.mensaje.set(
-          error.status === HTTP_STATUS.NO_ENCONTRADO
-            ? 'No hay usuarios registrados.'
-            : this.textoError(error, 'No se pudieron cargar los usuarios.'),
-        );
-      },
-    });
-  }
+  // ---------- Consultar (GET) ----------
 
   buscarPorId(): void {
     const id = this.idFiltro.trim();
     if (!id) {
-      this.cargar();
+      this.cargarTodos();
       return;
     }
+
     this.cargando.set(true);
-    this.mensaje.set('');
-    this.servicio.obtener(id).subscribe({
-      next: (usuario) => {
-        this.usuarios.set([usuario]);
+    this.usuarioService.obtener(id).subscribe({
+      next: (u) => {
+        this.filas.set([u]);
+        this.avisar('');
         this.cargando.set(false);
       },
       error: (error: HttpErrorResponse) => {
-        this.usuarios.set([]);
+        this.filas.set([]);
+        this.avisar(this.textoError(error, false), true);
         this.cargando.set(false);
-        this.mensaje.set(this.textoError(error, 'No se pudo buscar el usuario.'));
       },
     });
   }
 
   limpiarFiltro(): void {
     this.idFiltro = '';
-    this.cargar();
+    this.cargarTodos();
   }
+
+  /** GET por id y abre el panel solo lectura. */
+  ver(fila: Usuario): void {
+    this.cargando.set(true);
+    this.usuarioService.obtener(fila.id_usuario).subscribe({
+      next: (completa) => {
+        this.formulario = this.formularioDesde(completa);
+        this.modo.set('ver');
+        this.panelAbierto.set(true);
+        this.cargando.set(false);
+      },
+      error: (error: HttpErrorResponse) => {
+        this.avisar(this.textoError(error, false), true);
+        this.cargando.set(false);
+      },
+    });
+  }
+
+  // ---------- Panel lateral ----------
 
   abrirCrear(): void {
-    this.formulario = this.formularioVacio();
-    this.idEnEdicion = '';
-    this.mensajePopup.set('');
     this.modo.set('crear');
-    this.popupAbierto.set(true);
+    this.idEditando = '';
+    this.formulario = this.formularioVacio();
+    this.panelAbierto.set(true);
   }
 
-  abrirEditar(usuario: Usuario): void {
-    this.formulario = {
-      id_empleado: usuario.id_empleado,
-      nombre_usuario: usuario.nombre_usuario,
-      primer_nombre: usuario.primer_nombre,
-      segundo_nombre: usuario.segundo_nombre,
-      primer_apellido: usuario.primer_apellido,
-      segundo_apellido: usuario.segundo_apellido,
-      clave: '',
-    };
-    this.idEnEdicion = usuario.id_usuario;
-    this.mensajePopup.set('');
+  abrirEditar(fila: Usuario): void {
     this.modo.set('editar');
-    this.popupAbierto.set(true);
+    this.idEditando = fila.id_usuario;
+    this.formulario = this.formularioDesde(fila);
+    this.panelAbierto.set(true);
   }
 
-  cerrarPopup(): void {
-    this.popupAbierto.set(false);
+  cerrarPanel(): void {
+    this.panelAbierto.set(false);
   }
+
+  // ---------- Crear y editar (POST / PUT) ----------
 
   guardar(): void {
+    if (this.soloLectura()) {
+      return;
+    }
     if (!this.formularioValido()) {
-      this.mensajePopup.set(
-        'Completa nombre, apellido y usuario. Al crear también la clave y el ID del empleado.',
-      );
+      this.avisar('Completa: empleado, nombre de usuario, primer nombre, primer apellido, clave.', true);
       return;
     }
-    this.mensajePopup.set('');
 
-    const peticion =
-      this.modo() === 'crear'
-        ? this.servicio.crear(this.datosCreacion())
-        : this.servicio.actualizar(this.idEnEdicion, this.datosEdicion());
+    this.cargando.set(true);
+    if (this.modo() === 'crear') {
+      this.usuarioService.crear(this.datosCreacion()).subscribe({
+        next: (respuesta) => this.despuesDeGuardar(respuesta.message),
+        error: (error: HttpErrorResponse) => this.falloGuardar(error),
+      });
+      return;
+    }
 
-    peticion.subscribe({
-      next: (respuesta) => {
-        this.cerrarPopup();
-        this.cargar();
-        this.mensaje.set(respuesta.message);
-      },
-      error: (error: HttpErrorResponse) => {
-        this.mensajePopup.set(this.textoError(error, 'No se pudo guardar el usuario.'));
-      },
+    this.usuarioService.actualizar(this.idEditando, this.datosEdicion()).subscribe({
+      next: (respuesta) => this.despuesDeGuardar(respuesta.message),
+      error: (error: HttpErrorResponse) => this.falloGuardar(error),
     });
   }
 
-  eliminar(usuario: Usuario): void {
-    if (!confirm(`¿Eliminar al usuario ${usuario.nombre_usuario}?`)) {
+  // ---------- Eliminar (DELETE) ----------
+
+  eliminar(fila: Usuario): void {
+    if (!confirm('¿Eliminar este usuario?')) {
       return;
     }
-    this.servicio.eliminar(usuario.id_usuario).subscribe({
+
+    this.cargando.set(true);
+    this.usuarioService.eliminar(fila.id_usuario).subscribe({
       next: () => {
-        this.cargar();
-        this.mensaje.set('Usuario eliminado.');
+        this.avisar('Usuario eliminado');
+        this.refrescar();
       },
       error: (error: HttpErrorResponse) => {
-        this.mensaje.set(this.textoError(error, 'No se pudo eliminar el usuario.'));
+        this.avisar(this.textoError(error, false), true);
+        this.cargando.set(false);
       },
     });
   }
 
-  private formularioVacio(): UsuarioCreate {
+  copiarId(fila: Usuario): void {
+    navigator.clipboard
+      .writeText(fila.id_usuario)
+      .then(() => this.avisar('ID copiado. Pégalo en el buscador.'))
+      .catch(() => this.avisar('No se pudo copiar el ID.', true));
+  }
+
+  etiquetaEmpleado(x: EmpleadoReferencia): string {
+    return `${x.nombre} (${x.cargo})`;
+  }
+
+  etiquetaEmpleadoPorId(id: string): string {
+    const encontrado = this.empleados().find((x) => x.id_empleado === id);
+    return encontrado ? this.etiquetaEmpleado(encontrado) : id.slice(0, 8);
+  }
+
+  private cargarEmpleados(): void {
+    this.empleadoService.listar().subscribe({
+      next: (respuesta) => this.empleados.set(respuesta.data ?? []),
+      error: () => this.empleados.set([]),
+    });
+  }
+
+  // ---------- Internos ----------
+
+  private cargarTodos(): void {
+    this.cargando.set(true);
+    this.usuarioService.listar().subscribe({
+      next: (respuesta) => {
+        const filas = respuesta.data ?? [];
+        this.filas.set(filas);
+        this.avisar(filas.length ? '' : 'No hay registros');
+        this.cargando.set(false);
+      },
+      error: (error: HttpErrorResponse) => {
+        this.filas.set([]);
+        const listaVacia = error.status === HTTP_STATUS.NO_ENCONTRADO;
+        this.avisar(listaVacia ? 'No hay registros' : this.textoError(error, true), !listaVacia);
+        this.cargando.set(false);
+      },
+    });
+  }
+
+  private refrescar(): void {
+    if (this.idFiltro.trim()) {
+      this.buscarPorId();
+      return;
+    }
+    this.cargarTodos();
+  }
+
+  private despuesDeGuardar(texto: string): void {
+    this.panelAbierto.set(false);
+    this.avisar(texto);
+    this.refrescar();
+  }
+
+  private falloGuardar(error: HttpErrorResponse): void {
+    this.avisar(this.textoError(error, false), true);
+    this.cargando.set(false);
+  }
+
+  private formularioValido(): boolean {
+    const f = this.formulario;
+    const base = Boolean(
+      f.id_empleado &&
+      f.nombre_usuario.trim() &&
+      f.primer_nombre.trim() &&
+      f.primer_apellido.trim(),
+    );
+    if (this.modo() === 'crear') {
+      return base && f.clave.trim().length > 0;
+    }
+    return base;
+  }
+
+  private datosCreacion(): UsuarioCreate {
+    const f = this.formulario;
+    return {
+      id_empleado: f.id_empleado,
+      nombre_usuario: f.nombre_usuario.trim(),
+      primer_nombre: f.primer_nombre.trim(),
+      segundo_nombre: f.segundo_nombre.trim(),
+      primer_apellido: f.primer_apellido.trim(),
+      segundo_apellido: f.segundo_apellido.trim(),
+      clave: f.clave,
+      id_usuario_creacion: environment.usuarioAuditoriaId,
+    };
+  }
+
+  private datosEdicion(): UsuarioUpdate {
+    const f = this.formulario;
+    const cambios: UsuarioUpdate = {
+      nombre_usuario: f.nombre_usuario.trim(),
+      primer_nombre: f.primer_nombre.trim(),
+      segundo_nombre: f.segundo_nombre.trim(),
+      primer_apellido: f.primer_apellido.trim(),
+      segundo_apellido: f.segundo_apellido.trim(),
+      id_usuario_edicion: environment.usuarioAuditoriaId,
+    };
+    if (f.clave.trim()) {
+      cambios.clave = f.clave;
+    }
+    return cambios;
+  }
+
+  private formularioVacio(): UsuarioFormulario {
     return {
       id_empleado: '',
       nombre_usuario: '',
@@ -159,61 +294,40 @@ export class Usuarios implements OnInit {
     };
   }
 
-  private formularioValido(): boolean {
-    const f = this.formulario;
-    const basicos = Boolean(
-      f.primer_nombre.trim() && f.primer_apellido.trim() && f.nombre_usuario.trim(),
-    );
-    if (this.modo() === 'editar') {
-      return basicos;
-    }
-    return basicos && Boolean(f.clave.trim() && f.id_empleado.trim());
-  }
-
-  private datosCreacion(): UsuarioCreate {
-    const f = this.formulario;
+  private formularioDesde(fila: Usuario): UsuarioFormulario {
     return {
-      id_empleado: f.id_empleado.trim(),
-      nombre_usuario: f.nombre_usuario.trim(),
-      primer_nombre: f.primer_nombre.trim(),
-      segundo_nombre: f.segundo_nombre.trim(),
-      primer_apellido: f.primer_apellido.trim(),
-      segundo_apellido: f.segundo_apellido.trim(),
-      clave: f.clave,
+      id_empleado: fila.id_empleado,
+      nombre_usuario: fila.nombre_usuario,
+      primer_nombre: fila.primer_nombre,
+      segundo_nombre: fila.segundo_nombre,
+      primer_apellido: fila.primer_apellido,
+      segundo_apellido: fila.segundo_apellido,
+      clave: '',
     };
   }
 
-  private datosEdicion(): UsuarioUpdate {
-    const f = this.formulario;
-    const datos: UsuarioUpdate = {
-      nombre_usuario: f.nombre_usuario.trim(),
-      primer_nombre: f.primer_nombre.trim(),
-      segundo_nombre: f.segundo_nombre.trim(),
-      primer_apellido: f.primer_apellido.trim(),
-      segundo_apellido: f.segundo_apellido.trim(),
-    };
-    if (f.clave.trim()) {
-      datos.clave = f.clave;
-    }
-    return datos;
+  private avisar(texto: string, error = false): void {
+    this.mensaje.set(texto);
+    this.esError.set(error && texto.length > 0);
   }
 
-  private textoError(error: HttpErrorResponse, porDefecto: string): string {
-    switch (error.status) {
-      case HTTP_STATUS.SIN_CONEXION:
-        return 'No hay conexión con el servidor. ¿Está encendido el backend?';
-      case HTTP_STATUS.NO_ENCONTRADO:
-        return typeof error.error?.detail === 'string'
-          ? error.error.detail
-          : 'No se encontró el registro.';
-      case HTTP_STATUS.CONFLICTO:
-        return 'Ese registro ya existe.';
-      case HTTP_STATUS.DATOS_INVALIDOS:
-        return 'Revisa los datos: los IDs deben ser UUID válidos y los campos obligatorios no pueden ir vacíos.';
-      case HTTP_STATUS.ERROR_SERVIDOR:
-        return 'El servidor no pudo completar la operación. Puede que el registro esté en uso, que el ID del empleado no exista o que el usuario ya exista.';
-      default:
-        return porDefecto;
+  private textoError(error: HttpErrorResponse, alListar: boolean): string {
+    if (error.status === HTTP_STATUS.SIN_CONEXION) {
+      return 'No se pudo conectar con la API. Revisa que el backend esté en el puerto 8000.';
     }
+    if (error.status === HTTP_STATUS.NO_ENCONTRADO) {
+      return alListar ? 'No hay registros' : 'No encontrado';
+    }
+    if (error.status === HTTP_STATUS.DATOS_INVALIDOS) {
+      return 'Revisa los datos. Los IDs tienen que ser UUID válidos.';
+    }
+    if (error.status === HTTP_STATUS.ERROR_SERVIDOR) {
+      return 'El servidor no pudo completar la operación. Puede que el registro esté en uso o que un dato relacionado no exista.';
+    }
+    const detail = error.error?.detail;
+    if (typeof detail === 'string') {
+      return detail;
+    }
+    return 'No se pudo completar la operación';
   }
 }
