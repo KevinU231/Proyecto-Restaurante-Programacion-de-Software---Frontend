@@ -1,45 +1,133 @@
-<div class="container mt-4">
-  <h2>Gestión de Menús</h2>
-  
-  <!-- Formulario para agregar menú -->
-  <form (ngSubmit)="guardarMenu()" class="card p-3 mb-4">
-    <div class="row g-3">
-      <div class="col-md-6">
-        <label class="form-label">Nombre del Menú</label>
-        <input type="text" [(ngModel)]="nuevoMenu.nombre_menu" name="nombre_menu" class="form-control" required>
+<section class="pagina">
+  <header class="cabecera">
+    <div>
+      <p class="sobretitulo">Módulo</p>
+      <h1>📖 Menús</h1>
+    </div>
+    <button type="button" class="btn btn-principal" (click)="abrirCrear()">
+      + Nuevo menú
+    </button>
+  </header>
+
+  <div class="buscador">
+    <input
+      type="text"
+      placeholder="Buscar menú por ID (UUID)"
+      [(ngModel)]="idFiltro"
+      (keyup.enter)="buscarPorId()"
+    />
+    <button type="button" class="btn" (click)="buscarPorId()">Buscar</button>
+    <button type="button" class="btn btn-suave" (click)="limpiarFiltro()">Ver todos</button>
+  </div>
+
+  @if (cargando()) {
+    <p class="aviso">Cargando…</p>
+  }
+  @if (mensaje()) {
+    <p class="aviso" [class.aviso-error]="esError()">{{ mensaje() }}</p>
+  }
+
+  <div class="tabla-caja">
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Descripción</th>
+          <th>Platos</th>
+          <th class="col-acciones">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (fila of filas(); track fila.id_menu) {
+          <tr>
+            <td>
+              <button
+                type="button"
+                class="id-copiar"
+                [title]="fila.id_menu + ' (clic para copiar)'"
+                (click)="copiarId(fila)"
+              >
+                {{ fila.id_menu.slice(0, 8) }}…
+              </button>
+            </td>
+            <td>{{ fila.nombre }}</td>
+            <td>{{ fila.descripcion }}</td>
+            <td>{{ nombresPlatos(fila) }}</td>
+            <td class="acciones">
+              <button type="button" class="btn btn-mini" (click)="ver(fila)">Ver</button>
+              <button type="button" class="btn btn-mini" (click)="abrirEditar(fila)">Editar</button>
+              <button type="button" class="btn btn-mini btn-peligro" (click)="eliminar(fila)">
+                Eliminar
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="vacio">Nada para mostrar por ahora.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
+
+@if (panelAbierto()) {
+  <div class="velo" (click)="cerrarPanel()"></div>
+  <aside class="panel" role="dialog" aria-modal="true" [attr.aria-label]="tituloPanel()">
+    <header class="panel-cabecera">
+      <h2>{{ tituloPanel() }}</h2>
+      <button type="button" class="panel-cerrar" aria-label="Cerrar panel" (click)="cerrarPanel()">
+        ✕
+      </button>
+    </header>
+
+    <div class="panel-cuerpo">
+      <div class="campo">
+        <label class="campo-etiqueta">
+          Nombre
+          @if (!soloLectura()) {
+            <span class="obligatorio">*</span>
+          }
+        </label>
+        <input type="text" [(ngModel)]="formulario.nombre" [disabled]="soloLectura()" />
       </div>
-      <div class="col-md-6">
-        <label class="form-label">Disponible</label>
-        <select [(ngModel)]="nuevoMenu.disponible" name="disponible" class="form-select">
-          <option [ngValue]="true">Sí</option>
-          <option [ngValue]="false">No</option>
-        </select>
+
+      <div class="campo">
+        <label class="campo-etiqueta">Descripción</label>
+        <input type="text" [(ngModel)]="formulario.descripcion" [disabled]="soloLectura()" />
       </div>
-      <div class="col-12">
-        <label class="form-label">Descripción</label>
-        <textarea [(ngModel)]="nuevoMenu.descripcion" name="descripcion" class="form-control" rows="2"></textarea>
-      </div>
-      <div class="col-12">
-        <button type="submit" class="btn btn-primary">Guardar Menú</button>
+
+      <div class="campo">
+        <span class="campo-etiqueta">Platos del menú</span>
+        <div class="opciones">
+          @for (plato of platos(); track plato.id_plato) {
+            <label class="opcion">
+              <input
+                type="checkbox"
+                [checked]="tienePlato(plato.id_plato)"
+                [disabled]="soloLectura()"
+                (change)="alternarPlato(plato.id_plato)"
+              />
+              <span>
+                {{ plato.nombre }}
+                <small>($ {{ plato.precio }})</small>
+              </span>
+            </label>
+          } @empty {
+            <p class="sin-opciones">No hay platos registrados. Créalos primero en Platos.</p>
+          }
+        </div>
       </div>
     </div>
-  </form>
 
-  <!-- Tabla de menús -->
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>Nombre</th>
-        <th>Descripción</th>
-        <th>Disponible</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let m of menus">
-        <td>{{ m.nombre_menu }}</td>
-        <td>{{ m.descripcion }}</td>
-        <td>{{ m.disponible ? 'Sí' : 'No' }}</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+    <footer class="panel-pie">
+      <button type="button" class="btn btn-suave" (click)="cerrarPanel()">
+        {{ soloLectura() ? 'Cerrar' : 'Cancelar' }}
+      </button>
+      @if (!soloLectura()) {
+        <button type="button" class="btn btn-principal" (click)="guardar()">Guardar</button>
+      }
+    </footer>
+  </aside>
+}

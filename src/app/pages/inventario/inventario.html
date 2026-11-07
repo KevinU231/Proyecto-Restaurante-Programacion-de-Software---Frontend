@@ -1,41 +1,146 @@
-<div class="container mt-4">
-  <h2>Gestión de Inventario</h2>
-  <form (ngSubmit)="guardarItem()" class="card p-3 mb-4">
-    <div class="row g-3">
-      <div class="col-md-4">
-        <label class="form-label">Item / Insumo</label>
-        <input type="text" [(ngModel)]="nuevoItem.nombre_item" name="nombre_item" class="form-control" required>
+<section class="pagina">
+  <header class="cabecera">
+    <div>
+      <p class="sobretitulo">Módulo</p>
+      <h1>📦 Inventario</h1>
+    </div>
+    <button type="button" class="btn btn-principal" (click)="abrirCrear()">
+      + Nuevo insumo
+    </button>
+  </header>
+
+  <div class="buscador">
+    <input
+      type="text"
+      placeholder="Buscar insumo por ID (UUID)"
+      [(ngModel)]="idFiltro"
+      (keyup.enter)="buscarPorId()"
+    />
+    <button type="button" class="btn" (click)="buscarPorId()">Buscar</button>
+    <button type="button" class="btn btn-suave" (click)="limpiarFiltro()">Ver todos</button>
+  </div>
+
+  @if (cargando()) {
+    <p class="aviso">Cargando…</p>
+  }
+  @if (mensaje()) {
+    <p class="aviso" [class.aviso-error]="esError()">{{ mensaje() }}</p>
+  }
+
+  <div class="tabla-caja">
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Insumo</th>
+          <th>Cantidad</th>
+          <th>Unidad</th>
+          <th class="col-acciones">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (fila of filas(); track fila.id_insumo) {
+          <tr>
+            <td>
+              <button
+                type="button"
+                class="id-copiar"
+                [title]="fila.id_insumo + ' (clic para copiar)'"
+                (click)="copiarId(fila)"
+              >
+                {{ fila.id_insumo.slice(0, 8) }}…
+              </button>
+            </td>
+            <td>{{ fila.nombre_insumo }}</td>
+            <td>{{ fila.cantidad }}</td>
+            <td>{{ fila.unidad_medida }}</td>
+            <td class="acciones">
+              <button type="button" class="btn btn-mini" (click)="ver(fila)">Ver</button>
+              <button type="button" class="btn btn-mini" (click)="abrirEditar(fila)">Editar</button>
+              <button type="button" class="btn btn-mini btn-peligro" (click)="eliminar(fila)">
+                Eliminar
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="vacio">Nada para mostrar por ahora.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
+
+@if (panelAbierto()) {
+  <div class="velo" (click)="cerrarPanel()"></div>
+  <aside class="panel" role="dialog" aria-modal="true" [attr.aria-label]="tituloPanel()">
+    <header class="panel-cabecera">
+      <h2>{{ tituloPanel() }}</h2>
+      <button type="button" class="panel-cerrar" aria-label="Cerrar panel" (click)="cerrarPanel()">
+        ✕
+      </button>
+    </header>
+
+    <div class="panel-cuerpo">
+      <div class="campo">
+        <label class="campo-etiqueta">
+          Insumo
+          @if (!soloLectura()) {
+            <span class="obligatorio">*</span>
+          }
+        </label>
+        <input type="text" [(ngModel)]="formulario.nombre_insumo" [disabled]="soloLectura()" />
       </div>
-      <div class="col-md-4">
-        <label class="form-label">Cantidad</label>
-        <input type="number" [(ngModel)]="nuevoItem.cantidad_stock" name="cantidad_stock" class="form-control" required>
+
+      <div class="campo">
+        <label class="campo-etiqueta">
+          Cantidad
+          @if (!soloLectura()) {
+            <span class="obligatorio">*</span>
+          }
+        </label>
+        <input
+          type="number"
+          min="0"
+          step="any"
+          placeholder="0"
+          [(ngModel)]="formulario.cantidad"
+          [disabled]="soloLectura()"
+        />
       </div>
-      <div class="col-md-4">
-        <label class="form-label">Unidad de Medida</label>
-        <input type="text" [(ngModel)]="nuevoItem.unidad_medida" name="unidad_medida" class="form-control" required>
-      </div>
-      <div class="col-12">
-        <button type="submit" class="btn btn-primary">Guardar Item</button>
+
+      <div class="campo">
+        <label class="campo-etiqueta">
+          Unidad de medida
+          @if (!soloLectura()) {
+            <span class="obligatorio">*</span>
+          }
+        </label>
+        <input
+          type="text"
+          list="unidades-medida"
+          placeholder="kg, g, litros, unidades…"
+          [(ngModel)]="formulario.unidad_medida"
+          [disabled]="soloLectura()"
+        />
+        <datalist id="unidades-medida">
+          <option value="kg"></option>
+          <option value="g"></option>
+          <option value="litros"></option>
+          <option value="ml"></option>
+          <option value="unidades"></option>
+        </datalist>
       </div>
     </div>
-  </form>
 
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>Nombre</th>
-        <th>Stock</th>
-        <th>Unidad</th>
-        <th>Stock Mínimo</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let item of inventarios">
-        <td>{{ item.nombre_item }}</td>
-        <td>{{ item.cantidad_stock }}</td>
-        <td>{{ item.unidad_medida }}</td>
-        <td>{{ item.stock_minimo }}</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+    <footer class="panel-pie">
+      <button type="button" class="btn btn-suave" (click)="cerrarPanel()">
+        {{ soloLectura() ? 'Cerrar' : 'Cancelar' }}
+      </button>
+      @if (!soloLectura()) {
+        <button type="button" class="btn btn-principal" (click)="guardar()">Guardar</button>
+      }
+    </footer>
+  </aside>
+}
