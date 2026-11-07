@@ -1,3 +1,4 @@
+
 /* Estilos propios de la pantalla de Platos */
 .cabecera {
   border-left: 6px solid #2a9d8f;
@@ -36,4 +37,9 @@
   margin: 0;
   font-size: 0.9rem;
   color: var(--texto-suave);
+}
+
+/* Evitar que el precio se divida en dos líneas */
+td {
+  white-space: nowrap;
 }
