@@ -1,42 +1,170 @@
-HTML
-<div class="container mt-4">
-  <h2>Gestión de Domicilios</h2>
-  <form (ngSubmit)="guardarDomicilio()" class="card p-3 mb-4">
-    <div class="row g-3">
-      <div class="col-md-4">
-        <label class="form-label">ID Pedido</label>
-        <input type="text" [(ngModel)]="nuevoDomicilio.id_pedido" name="id_pedido" class="form-control" required>
+<section class="pagina">
+  <header class="cabecera">
+    <div>
+      <p class="sobretitulo">Módulo</p>
+      <h1>🛵 Domicilios</h1>
+    </div>
+    <button type="button" class="btn btn-principal" (click)="abrirCrear()">
+      + Nuevo domicilio
+    </button>
+  </header>
+
+  <div class="buscador">
+    <input
+      type="text"
+      placeholder="Buscar domicilio por ID (UUID)"
+      [(ngModel)]="idFiltro"
+      (keyup.enter)="buscarPorId()"
+    />
+    <button type="button" class="btn" (click)="buscarPorId()">Buscar</button>
+    <button type="button" class="btn btn-suave" (click)="limpiarFiltro()">Ver todos</button>
+  </div>
+
+  @if (cargando()) {
+    <p class="aviso">Cargando…</p>
+  }
+  @if (mensaje()) {
+    <p class="aviso" [class.aviso-error]="esError()">{{ mensaje() }}</p>
+  }
+
+  <div class="tabla-caja">
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Cliente</th>
+          <th>Dirección de entrega</th>
+          <th>Estado</th>
+          <th>Platos</th>
+          <th class="col-acciones">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (fila of filas(); track fila.id_domicilio) {
+          <tr>
+            <td>
+              <button
+                type="button"
+                class="id-copiar"
+                [title]="fila.id_domicilio + ' (clic para copiar)'"
+                (click)="copiarId(fila)"
+              >
+                {{ fila.id_domicilio.slice(0, 8) }}…
+              </button>
+            </td>
+            <td>{{ nombreCliente(fila.id_cliente) }}</td>
+            <td>{{ fila.direccion_entrega }}</td>
+            <td>
+              <span class="estado" [attr.data-estado]="fila.estado">{{ fila.estado }}</span>
+            </td>
+            <td>{{ nombresPlatos(fila) }}</td>
+            <td class="acciones">
+              <button type="button" class="btn btn-mini" (click)="ver(fila)">Ver</button>
+              <button type="button" class="btn btn-mini" (click)="abrirEditar(fila)">Editar</button>
+              <button type="button" class="btn btn-mini btn-peligro" (click)="eliminar(fila)">
+                Eliminar
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="vacio">Nada para mostrar por ahora.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
+
+@if (panelAbierto()) {
+  <div class="velo" (click)="cerrarPanel()"></div>
+  <aside class="panel" role="dialog" aria-modal="true" [attr.aria-label]="tituloPanel()">
+    <header class="panel-cabecera">
+      <h2>{{ tituloPanel() }}</h2>
+      <button type="button" class="panel-cerrar" aria-label="Cerrar panel" (click)="cerrarPanel()">
+        ✕
+      </button>
+    </header>
+
+    <div class="panel-cuerpo">
+      <div class="campo">
+        <label class="campo-etiqueta">
+          Cliente
+          @if (!soloLectura()) {
+            <span class="obligatorio">*</span>
+          }
+        </label>
+        <select
+          [ngModel]="formulario.id_cliente"
+          (ngModelChange)="elegirCliente($event)"
+          [disabled]="soloLectura() || modo() === 'editar'"
+        >
+          <option value="">Selecciona un cliente</option>
+          @for (cliente of clientes(); track cliente.id_cliente) {
+            <option [value]="cliente.id_cliente">{{ cliente.nombre }}</option>
+          }
+        </select>
+        @if (modo() === 'editar') {
+          <small class="nota">El cliente no se puede cambiar al editar.</small>
+        }
+        @if (modo() === 'crear' && clientes().length === 0) {
+          <small class="nota">No hay clientes registrados. Créalos primero en Clientes.</small>
+        }
       </div>
-      <div class="col-md-5">
-        <label class="form-label">Dirección de Entrega</label>
-        <input type="text" [(ngModel)]="nuevoDomicilio.direccion_entrega" name="direccion_entrega" class="form-control" required>
+
+      <div class="campo">
+        <label class="campo-etiqueta">
+          Dirección de entrega
+          @if (!soloLectura()) {
+            <span class="obligatorio">*</span>
+          }
+        </label>
+        <input
+          type="text"
+          [(ngModel)]="formulario.direccion_entrega"
+          [disabled]="soloLectura()"
+        />
       </div>
-      <div class="col-md-3">
-        <label class="form-label">Costo Envío</label>
-        <input type="number" [(ngModel)]="nuevoDomicilio.costo_envio" name="costo_envio" class="form-control" required>
+
+      <div class="campo">
+        <label class="campo-etiqueta">Estado</label>
+        <select [(ngModel)]="formulario.estado" [disabled]="soloLectura()">
+          @for (estado of opcionesEstado(); track estado) {
+            <option [value]="estado">{{ estado }}</option>
+          }
+        </select>
       </div>
-      <div class="col-12">
-        <button type="submit" class="btn btn-primary">Registrar Domicilio</button>
+
+      <div class="campo">
+        <span class="campo-etiqueta">Platos del pedido</span>
+        <div class="opciones">
+          @for (plato of platos(); track plato.id_plato) {
+            <label class="opcion">
+              <input
+                type="checkbox"
+                [checked]="tienePlato(plato.id_plato)"
+                [disabled]="soloLectura()"
+                (change)="alternarPlato(plato.id_plato)"
+              />
+              <span>
+                {{ plato.nombre }}
+                <small>($ {{ plato.precio }})</small>
+              </span>
+            </label>
+          } @empty {
+            <p class="sin-opciones">No hay platos registrados. Créalos primero en Platos.</p>
+          }
+        </div>
       </div>
     </div>
-  </form>
 
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>ID Pedido</th>
-        <th>Dirección</th>
-        <th>Estado</th>
-        <th>Costo</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let d of domicilios">
-        <td>{{ d.id_pedido }}</td>
-        <td>{{ d.direccion_entrega }}</td>
-        <td>{{ d.estado_envio }}</td>
-        <td>${{ d.costo_envio }}</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+    <footer class="panel-pie">
+      <button type="button" class="btn btn-suave" (click)="cerrarPanel()">
+        {{ soloLectura() ? 'Cerrar' : 'Cancelar' }}
+      </button>
+      @if (!soloLectura()) {
+        <button type="button" class="btn btn-principal" (click)="guardar()">Guardar</button>
+      }
+    </footer>
+  </aside>
+}

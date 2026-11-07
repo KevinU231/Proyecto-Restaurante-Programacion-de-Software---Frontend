@@ -1,46 +1,152 @@
-<div class="container mt-4">
-  <h2>Gestión de Platos</h2>
-  
-  <form (ngSubmit)="guardarPlato()" class="card p-3 mb-4">
-    <div class="row g-3">
-      <div class="col-md-4">
-        <label class="form-label">Nombre</label>
-        <input type="text" [(ngModel)]="nuevoPlato.nombre" name="nombre" class="form-control" required>
+<section class="pagina">
+  <header class="cabecera">
+    <div>
+      <p class="sobretitulo">Módulo</p>
+      <h1>🍲 Platos</h1>
+    </div>
+    <button type="button" class="btn btn-principal" (click)="abrirCrear()">
+      + Nuevo plato
+    </button>
+  </header>
+
+  <div class="buscador">
+    <input
+      type="text"
+      placeholder="Buscar plato por ID (UUID)"
+      [(ngModel)]="idFiltro"
+      (keyup.enter)="buscarPorId()"
+    />
+    <button type="button" class="btn" (click)="buscarPorId()">Buscar</button>
+    <button type="button" class="btn btn-suave" (click)="limpiarFiltro()">Ver todos</button>
+  </div>
+
+  @if (cargando()) {
+    <p class="aviso">Cargando…</p>
+  }
+  @if (mensaje()) {
+    <p class="aviso" [class.aviso-error]="esError()">{{ mensaje() }}</p>
+  }
+
+  <div class="tabla-caja">
+    <table class="tabla">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Nombre</th>
+          <th>Precio</th>
+          <th>Descripción</th>
+          <th>Insumos</th>
+          <th class="col-acciones">Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (fila of filas(); track fila.id_plato) {
+          <tr>
+            <td>
+              <button
+                type="button"
+                class="id-copiar"
+                [title]="fila.id_plato + ' (clic para copiar)'"
+                (click)="copiarId(fila)"
+              >
+                {{ fila.id_plato.slice(0, 8) }}…
+              </button>
+            </td>
+            <td>{{ fila.nombre }}</td>
+            <td>$ {{ fila.precio | number: '1.0-2' }}</td>
+            <td>{{ fila.descripcion }}</td>
+            <td>{{ nombresInsumos(fila) }}</td>
+            <td class="acciones">
+              <button type="button" class="btn btn-mini" (click)="ver(fila)">Ver</button>
+              <button type="button" class="btn btn-mini" (click)="abrirEditar(fila)">Editar</button>
+              <button type="button" class="btn btn-mini btn-peligro" (click)="eliminar(fila)">
+                Eliminar
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="vacio">Nada para mostrar por ahora.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+</section>
+
+@if (panelAbierto()) {
+  <div class="velo" (click)="cerrarPanel()"></div>
+  <aside class="panel" role="dialog" aria-modal="true" [attr.aria-label]="tituloPanel()">
+    <header class="panel-cabecera">
+      <h2>{{ tituloPanel() }}</h2>
+      <button type="button" class="panel-cerrar" aria-label="Cerrar panel" (click)="cerrarPanel()">
+        ✕
+      </button>
+    </header>
+
+    <div class="panel-cuerpo">
+      <div class="campo">
+        <label class="campo-etiqueta">
+          Nombre
+          @if (!soloLectura()) {
+            <span class="obligatorio">*</span>
+          }
+        </label>
+        <input type="text" [(ngModel)]="formulario.nombre" [disabled]="soloLectura()" />
       </div>
-      <div class="col-md-4">
-        <label class="form-label">Precio</label>
-        <input type="number" [(ngModel)]="nuevoPlato.precio" name="precio" class="form-control" required>
+
+      <div class="campo">
+        <label class="campo-etiqueta">
+          Precio
+          @if (!soloLectura()) {
+            <span class="obligatorio">*</span>
+          }
+        </label>
+        <input
+          type="number"
+          min="0"
+          step="any"
+          placeholder="0"
+          [(ngModel)]="formulario.precio"
+          [disabled]="soloLectura()"
+        />
       </div>
-      <div class="col-md-4">
-        <label class="form-label">Categoría</label>
-        <input type="text" [(ngModel)]="nuevoPlato.categoria" name="categoria" class="form-control" required>
+
+      <div class="campo">
+        <label class="campo-etiqueta">Descripción</label>
+        <input type="text" [(ngModel)]="formulario.descripcion" [disabled]="soloLectura()" />
       </div>
-      <div class="col-12">
-        <label class="form-label">Descripción</label>
-        <textarea [(ngModel)]="nuevoPlato.descripcion" name="descripcion" class="form-control"></textarea>
-      </div>
-      <div class="col-12">
-        <button type="submit" class="btn btn-primary">Guardar Plato</button>
+
+      <div class="campo">
+        <span class="campo-etiqueta">Insumos del plato</span>
+        <div class="opciones">
+          @for (insumo of insumos(); track insumo.id_insumo) {
+            <label class="opcion">
+              <input
+                type="checkbox"
+                [checked]="tieneInsumo(insumo.id_insumo)"
+                [disabled]="soloLectura()"
+                (change)="alternarInsumo(insumo.id_insumo)"
+              />
+              <span>
+                {{ insumo.nombre_insumo }}
+                <small>({{ insumo.cantidad }} {{ insumo.unidad_medida }})</small>
+              </span>
+            </label>
+          } @empty {
+            <p class="sin-opciones">No hay insumos registrados. Créalos primero en Inventario.</p>
+          }
+        </div>
       </div>
     </div>
-  </form>
 
-  <table class="table table-striped">
-    <thead>
-      <tr>
-        <th>Nombre</th>
-        <th>Categoría</th>
-        <th>Precio</th>
-        <th>Disponible</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let p of platos">
-        <td>{{ p.nombre }}</td>
-        <td>{{ p.categoria }}</td>
-        <td>${{ p.precio }}</td>
-        <td>{{ p.disponible ? 'Sí' : 'No' }}</td>
-      </tr>
-    </tbody>
-  </table>
-</div>
+    <footer class="panel-pie">
+      <button type="button" class="btn btn-suave" (click)="cerrarPanel()">
+        {{ soloLectura() ? 'Cerrar' : 'Cancelar' }}
+      </button>
+      @if (!soloLectura()) {
+        <button type="button" class="btn btn-principal" (click)="guardar()">Guardar</button>
+      }
+    </footer>
+  </aside>
+}

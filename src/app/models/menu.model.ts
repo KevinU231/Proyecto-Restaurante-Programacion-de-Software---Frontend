@@ -1,30 +1,25 @@
+import { PlatoSimple } from './plato.model';
+
+/** Lo que devuelve el backend (MenuRead): el menú con sus platos. */
 export interface Menu {
   id_menu: string;
-  nombre_menu: string;
+  nombre: string;
   descripcion: string;
-  disponible: boolean;
-  fecha_inicio?: string | null;
-  fecha_fin?: string | null;
-  id_usuario_creacion?: string | null;
-  id_usuario_edicion?: string | null;
-  fecha_creacion?: string;
-  fecha_edicion?: string | null;
+  platos: PlatoSimple[];
 }
 
+/** Lo que se envía en el POST (MenuCreate). */
 export interface MenuCreate {
-  nombre_menu: string;
+  nombre: string;
   descripcion: string;
-  disponible: boolean;
-  fecha_inicio?: string | null;
-  fecha_fin?: string | null;
-  id_usuario_creacion?: string | null;
+  ids_platos: string[];
+  id_usuario_creacion: string;
 }
 
+/** Lo que se envía en el PUT (MenuUpdate). */
 export interface MenuUpdate {
-  nombre_menu?: string;
+  nombre?: string;
   descripcion?: string;
-  disponible?: boolean;
-  fecha_inicio?: string | null;
-  fecha_fin?: string | null;
+  ids_platos?: string[];
   id_usuario_edicion: string;
 }

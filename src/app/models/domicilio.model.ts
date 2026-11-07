@@ -1,29 +1,27 @@
+import { PlatoSimple } from './plato.model';
+
+/** Lo que devuelve el backend (DomicilioRead): el domicilio con sus platos. */
 export interface Domicilio {
   id_domicilio: string;
-  id_pedido: string;
-  id_repartidor?: string | null;
+  id_cliente: string;
   direccion_entrega: string;
-  estado_envio: string;
-  costo_envio: number;
-  id_usuario_creacion?: string | null;
-  id_usuario_edicion?: string | null;
-  fecha_creacion?: string;
-  fecha_edicion?: string | null;
+  estado: string;
+  platos: PlatoSimple[];
 }
 
+/** Lo que se envía en el POST (DomicilioCreate). */
 export interface DomicilioCreate {
-  id_pedido: string;
-  id_repartidor?: string | null;
+  id_cliente: string;
   direccion_entrega: string;
-  estado_envio: string;
-  costo_envio: number;
-  id_usuario_creacion?: string | null;
+  ids_platos: string[];
+  id_usuario_creacion: string;
+  estado: string;
 }
 
+/** Lo que se envía en el PUT (DomicilioUpdate). El cliente no se puede cambiar. */
 export interface DomicilioUpdate {
-  id_repartidor?: string | null;
   direccion_entrega?: string;
-  estado_envio?: string;
-  costo_envio?: number;
+  ids_platos?: string[];
+  estado?: string;
   id_usuario_edicion: string;
 }
