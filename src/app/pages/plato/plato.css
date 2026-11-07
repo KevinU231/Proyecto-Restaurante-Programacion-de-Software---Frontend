@@ -1,0 +1,39 @@
+/* Estilos propios de la pantalla de Platos */
+.cabecera {
+  border-left: 6px solid #2a9d8f;
+  padding-left: 0.9rem;
+}
+
+.sobretitulo {
+  color: #2a9d8f;
+}
+
+/* Lista de insumos con casillas para elegir */
+.opciones {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  max-height: 220px;
+  overflow-y: auto;
+  padding: 0.6rem 0.75rem;
+  border: 1px solid var(--borde);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.opcion {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  cursor: pointer;
+}
+
+.opcion small {
+  color: var(--texto-suave);
+}
+
+.sin-opciones {
+  margin: 0;
+  font-size: 0.9rem;
+  color: var(--texto-suave);
+}
