@@ -1,59 +1,42 @@
-# ProyectoRestauranteProgramacionDeSoftwareFrontend
+# Proyecto-Restaurante-Programacion-de-Software---Frontend
+Repositorio Proyecto Restaurante Programacion de Software - Frontend
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.2.2.
+# Video del proyecto funcionando
 
-## Development server
+-- YouTube: https://youtu.be/bClS8niaeOM 
+-- OneDrive: https://correoitmedu-my.sharepoint.com/:v:/g/personal/kevingarces1131245_correo_itm_edu_co/IQCI4-TreRd4Qb9cV15F84PwAVc70f-YrGPxC3QAWs5xajc?e=ROWTpS&nav=eyJyZWZlcnJhbEluZm8iOnsicmVmZXJyYWxBcHAiOiJTdHJlYW1XZWJBcHAiLCJyZWZlcnJhbFZpZXciOiJTaGFyZURpYWxvZy1MaW5rIiwicmVmZXJyYWxBcHBQbGF0Zm9ybSI6IldlYiIsInJlZmVycmFsTW9kZSI6InZpZXcifX0%3D
 
-To start a local development server, run:
+URL del backend
+La aplicacion llama a la API en:
 
-```bash
-ng serve
-```
+-- http://127.0.0.1:8000
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+codigo para poder levantar el backend:
 
-## Code scaffolding
+pip install -r requirements.txt
+python -m uvicorn main:app --reload
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+Está definida en src/enviroments/enmviroments.ts
 
-```bash
-ng generate component component-name
-```
+# Cómo levantar el frontend en local
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+Se requiere tener Node.js 22 o superior (node -v) y tener el backend del proyecto corriendo en local
 
-```bash
-ng generate --help
-```
+1. Clonar el repositorio e instalar las dependencias:
 
-## Building
+git clone URL-del-repositorio
+cd carpeta-del-repositorio
+npm install --legacy-peer-deps
 
-To build the project run:
+2. Abrir src/enviroments/enmviroments.ts y revisar los siguientes valores:
 
-```bash
-ng build
-```
+apiUrl: 'http://127.0.0.1:8000'
+usuarioAuditoriaId: fa25f194-ef0e-425d-8d8c-50a653f8231a
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+usuarioAuditoriaId es el usuario que queda registrado como autor de las altas (id_usuario_creacion) y de las ediciones (id_usuario_edicion), así que debe ser un id_usuario que exista en la base de datos
 
-## Running unit tests
+3. Con el backend encendido, iniciar el frontend:
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+npm start
 
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+4. Abrir http://localhost:4200 en el navegador
