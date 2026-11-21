@@ -1,0 +1,16 @@
+{
+  "hosting": {
+    "public": "dist/Proyecto-Restaurante-Programacion-de-Software---Frontend/browser",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}
